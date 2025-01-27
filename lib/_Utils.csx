@@ -37,8 +37,7 @@ string GetVersionDir(Version version) {
     return GetVersionDir(version.ToString());
 }
 
-class TempDirectory : IDisposable
-{
+class TempDirectory : IDisposable {
     private DirectoryInfo di;
     public string Path => di.FullName;
 
@@ -50,8 +49,7 @@ class TempDirectory : IDisposable
         di.Create();
     }
 
-    public async void Dispose()
-    {
+    public async void Dispose() {
         if(di != null) {
             var diToDelete = di;
             Task.Run(async () => {
@@ -62,7 +60,6 @@ class TempDirectory : IDisposable
             di = null;
         }
     }
-    
 }
 
 async Task<UndertaleData> LoadExternalData(string path, bool updateStatus = false) {

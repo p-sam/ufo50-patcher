@@ -31,11 +31,8 @@ if(!IsUFO50Dir(ufo50Dir)) {
 
 var rawExeVersion = FileVersionInfo.GetVersionInfo(Path.Join(ufo50Dir, "ufo50.exe")).ProductVersion;
 var exeVersion = Version.Parse(rawExeVersion);
-if(exeVersion.Revision != 0) {
-    throw new ScriptException($"Script needs to be updated for this version of UFO50 (exeVer = {rawExeVersion})");
-}
 
-var ufo50Version = new Version(exeVersion.Major, exeVersion.Minor, exeVersion.Build);
+var ufo50Version = new Version(exeVersion.Major, exeVersion.Minor, exeVersion.Build, exeVersion.Revision);
 Environment.SetEnvironmentVariable("UFO50_EXPECTED_VERSION", $"{ufo50Version}");
 
 var versionDir = GetVersionDir(ufo50Version);

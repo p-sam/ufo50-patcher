@@ -3,7 +3,7 @@
 using System;
 
 Version GetUFO50Version(UndertaleData utdata) {
-    var constants = GetConstants(utdata, new string[] {"@@VersionMajor", "@@VersionMinor", "@@VersionRevision"});
+    var constants = GetConstants(utdata, new string[] {"@@VersionMajor", "@@VersionMinor", "@@VersionRevision", "@@VersionBuild"});
     return Version.Parse(String.Join('.', constants));
 }
 
