@@ -29,6 +29,8 @@ if(!IsUFO50Dir(ufo50Dir)) {
     throw new ScriptException("Invalid UFO50 dir");
 }
 
+Environment.SetEnvironmentVariable("UFO50_DIR", ufo50Dir);
+
 var rawExeVersion = FileVersionInfo.GetVersionInfo(Path.Join(ufo50Dir, "ufo50.exe")).ProductVersion;
 var exeVersion = Version.Parse(rawExeVersion);
 

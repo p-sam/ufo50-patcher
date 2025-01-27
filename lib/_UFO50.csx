@@ -7,6 +7,17 @@ Version GetUFO50Version(UndertaleData utdata) {
     return Version.Parse(String.Join('.', constants));
 }
 
+string GetCurrentUFO50Dir() {
+    EnsureDataLoaded();
+    var dir = Environment.GetEnvironmentVariable("UFO50_DIR");
+
+    if(dir == null || dir == "") {
+        dir = Path.GetDirectoryName(FilePath);
+    }
+
+    return dir;
+}
+
 UndertaleString GetUFO50DisplayVersionString(UndertaleData utdata) {
     var scrInitCode = utdata.Code.ByName("gml_GlobalScript_scrInit");
     if(scrInitCode == null) {
