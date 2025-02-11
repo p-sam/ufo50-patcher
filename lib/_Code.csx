@@ -3,9 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 
 string ExportAsm(UndertaleData utdata, UndertaleCode code) {
-    return code.Disassemble(utdata.Variables, utdata.CodeLocals.For(code));
+    return code.Disassemble(utdata.Variables, utdata.CodeLocals?.For(code));
 }
 
+var __g_ExportCodeSettings = new DecompilerSettings() {
+    CleanupLocalVarDeclarations = false,
+};
 var __g_ExportCodeContext = new System.Runtime.CompilerServices.ConditionalWeakTable<UndertaleData, GlobalDecompileContext>();
 GlobalDecompileContext _ExportCodeContext(UndertaleData utdata) {
     lock(utdata) {
@@ -64,7 +67,7 @@ async Task<List<string>> CompareCode(UndertaleData patched, UndertaleData origin
         SetProgressBar("Comparing code", "Comparing code", 0, patchedCodes.Count);
     }
 
-    await Task.Run(() => Parallel.ForEach(patchedCodes, new ParallelOptions{MaxDegreeOfParallelism = 8}, patchedCode => {
+    foreach(var patchedCode in patchedCodes) {
         if(updateStatus) {
             IncrementProgressParallel();
         }
@@ -73,14 +76,14 @@ async Task<List<string>> CompareCode(UndertaleData patched, UndertaleData origin
         var originalCode = original.Code.ByName(scriptName);
         if(originalCode == null) {
             changed.Add(scriptName);
-            return;
+            continue;
         }
     
         if(ExportAsm(patched, patchedCode) != ExportAsm(original, originalCode)) {
             changed.Add(scriptName);
-            return;
+            continue;
         }
-    }));
+    }
 
     return changed;
 }
@@ -90,6 +93,18 @@ void BeginImportCode() {
 }
 void EndImportCode() {
     DisableAllSyncBindings();
+}
+
+void ImportCodeString(string codeEntryName, string gml) {
+    ImportGMLString(codeEntryName, gml);
+    var code = Data.Code.ByName(codeEntryName);
+    code.LocalsCount = 1;
+}
+
+void ImportCodeFile(string gmlFilePath) {
+    var codeEntryName = Path.GetFileName(gmlFilePath);
+    codeEntryName = codeEntryName.Substring(0, codeEntryName.Length-4);
+    ImportCodeString(codeEntryName, File.ReadAllText(gmlFilePath));
 }
 
 async Task ImportCodeDir(string dir, bool updateStatus = false) {
@@ -102,8 +117,9 @@ async Task ImportCodeDir(string dir, bool updateStatus = false) {
     BeginImportCode();
     await Task.Run(() => {
         foreach (string scriptFile in scriptFiles) {
-            ImportGMLFile(scriptFile, true, true, true);
-            
+            ImportCodeFile(scriptFile);
+
+
             if(updateStatus) {
                 IncrementProgressParallel();
             }

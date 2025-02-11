@@ -52,12 +52,12 @@ IncrementProgress();
 
 if (scripts.Count > 0) {
     SetProgressBar("Importing modified scripts", "", 0, scripts.Count);
-    SyncBinding("Strings, Code, CodeLocals, Scripts, GlobalInitScripts, GameObjects, Functions, Variables", true);
+    BeginImportCode();
     await Task.Run(() => {
         foreach (string script in scripts) {
             ImportGMLFile(script, true, true, true);
             IncrementProgressParallel();
         }
     });
-    DisableAllSyncBindings();
+    EndImportCode();
 }

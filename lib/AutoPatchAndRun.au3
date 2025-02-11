@@ -15,6 +15,6 @@ EnvSet('UFO50_PATCHES', '*')
 If FileExists(@ScriptDir&'\..\build\patches.txt') Then EnvSet('UFO50_PATCHES', FileRead(@ScriptDir&'\..\build\patches.txt'))
 
 ProcessClose('ufo50.exe')
-$iRc = RunWait('"'&$UMT_EXE&'" "'&_PathFull('../AutoDetectAndPatch.csx')&'" _runscriptandexit')
+$iRc = RunWait('"'&$UMT_EXE&'" "'&_PathFull('../AutoDetectAndPatch.csx')&'" _runscriptandexit', @ScriptDir)
 If $iRc <> 0 Then Exit $iRc
 ShellExecute('steam://rungameid/1147860')
