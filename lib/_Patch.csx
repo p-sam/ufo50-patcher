@@ -47,7 +47,8 @@ async Task<KeyValuePair<PatchVersionRange, string>> ApplyCompatibleCodePatch(Ver
 
 List<string> _ReadScriptNamesInCodePatch(string codePatchPath) {
     var scriptNames = new List<string>();
-    var patchesSrc = File.ReadAllText(codePatchPath);
+    var patchesSrc = File.ReadAllText(codePatchPath).ReplaceLineEndings("\n");
+
     string pattern = @"^\+\+\+ patched/(gml_[\w_]+)\.gml$";
     foreach (Match m in Regex.Matches(patchesSrc, pattern, RegexOptions.Multiline)) {
         scriptNames.Add(m.Groups[1].Value);
