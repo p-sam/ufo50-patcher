@@ -18,8 +18,7 @@ using System.Threading.Tasks;
 
 EnsureDataLoaded();
 
-var ufo50Version = GetUFO50Version(Data);
-var scriptDir = Path.Join(GetVersionDir(ufo50Version), "UFO50_Code");
+var scriptDir = Path.Join(GetCurrentUFO50Dir(), "UFO50_Code");
 
 DateTime modifiedDate = DateTime.MinValue;
 var modifiedFilePath = Path.Join(scriptDir, "modified.txt");
