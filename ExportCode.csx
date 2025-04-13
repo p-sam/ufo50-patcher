@@ -20,6 +20,8 @@ if (Directory.Exists(codeDir)) {
     throw new ScriptException($"Folder '{codeFolderName}' already exists, remove before running this script");
 }
 
+var groupByGame = ScriptQuestion("Enable grouping of scripts by game ?");
+
 Directory.CreateDirectory(codeDir);
 
 SetProgressBar(null, "Export code", 0, Data.Code.Count);
@@ -32,17 +34,22 @@ await Task.Run(() => Parallel.ForEach(Data.Code, new ParallelOptions{MaxDegreeOf
         return;
     }
 
-    var gameIndex = 0;
-    Match m = gameRelatedScriptNameRegex.Match(code.Name.Content);
-    if(m.Success) {
-        gameIndex = Int32.Parse(m.Groups[1].Value);
+    var gameDir = codeDir;
+
+    if (groupByGame) {
+        var gameIndex = 0;
+        Match m = gameRelatedScriptNameRegex.Match(code.Name.Content);
+        if(m.Success) {
+            gameIndex = Int32.Parse(m.Groups[1].Value);
+        }
+
+        if(gameIndex >= gameNamesByIds.Length) {
+            gameIndex = 0;
+        }
+
+        gameDir = Path.Join(codeDir,  $"{gameIndex:00}-{gameNamesByIds[gameIndex]}");
     }
 
-    if(gameIndex >= gameNamesByIds.Length) {
-        gameIndex = 0;
-    }
-
-    var gameDir = Path.Join(codeDir,  $"{gameIndex:00}-{gameNamesByIds[gameIndex]}");
     try {
         Directory.CreateDirectory(gameDir);
     } catch {}

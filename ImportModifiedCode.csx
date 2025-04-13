@@ -51,12 +51,5 @@ IncrementProgress();
 
 if (scripts.Count > 0) {
     SetProgressBar("Importing modified scripts", "", 0, scripts.Count);
-    BeginImportCode();
-    await Task.Run(() => {
-        foreach (string script in scripts) {
-            ImportGMLFile(script, true, true, true);
-            IncrementProgressParallel();
-        }
-    });
-    EndImportCode();
+    await ImportCodeFiles(scripts.ToArray(), true);
 }

@@ -91,39 +91,47 @@ async Task<List<string>> CompareCode(UndertaleData patched, UndertaleData origin
 void BeginImportCode() {
     SyncBinding("Strings, Code, CodeLocals, Scripts, GlobalInitScripts, GameObjects, Functions, Variables", true);
 }
+
 void EndImportCode() {
     DisableAllSyncBindings();
 }
 
-void ImportCodeString(string codeEntryName, string gml) {
-    ImportGMLString(codeEntryName, gml);
-    var code = Data.Code.ByName(codeEntryName);
-    code.LocalsCount = 1;
-}
-
-void ImportCodeFile(string gmlFilePath) {
-    var codeEntryName = Path.GetFileName(gmlFilePath);
-    codeEntryName = codeEntryName.Substring(0, codeEntryName.Length-4);
-    ImportCodeString(codeEntryName, File.ReadAllText(gmlFilePath));
-}
-
-async Task ImportCodeDir(string dir, bool updateStatus = false) {
-    string[] scriptFiles = Directory.GetFiles(dir, "*.gml");
-
+async Task ImportCodeFiles(string[] scriptFiles, bool updateStatus = false) {
     if(updateStatus) {
         SetProgressBar(null, "Importing code", 0, scriptFiles.Length);
     }
 
     BeginImportCode();
+    var importGroup = new UndertaleModLib.Compiler.CodeImportGroup(Data);
     await Task.Run(() => {
         foreach (string scriptFile in scriptFiles) {
-            ImportCodeFile(scriptFile);
+            if(!Path.GetExtension(scriptFile).Equals(".gml")) {
+                throw new ScriptException($"Not a GML file: ${scriptFile}");
+            }
 
+            importGroup.QueueReplace(Path.GetFileNameWithoutExtension(scriptFile), File.ReadAllText(scriptFile));
 
             if(updateStatus) {
                 IncrementProgressParallel();
             }
         }
+
+        if(updateStatus) {
+            SetProgressBar(null, "Applying imported code", 0, 1);
+        }
+
+        importGroup.Import();
+
+        if(updateStatus) {
+            IncrementProgressParallel();
+        }
     });
+
     EndImportCode();
+}
+
+async Task ImportCodeDir(string dir, bool updateStatus = false) {
+    string[] scriptFiles = Directory.GetFiles(dir, "*.gml");
+
+    await ImportCodeFiles(scriptFiles, updateStatus);
 }

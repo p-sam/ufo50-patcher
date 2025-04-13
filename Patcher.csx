@@ -74,7 +74,9 @@ objMods.Visible = true;
 objMods.Persistent = true;
 DefineRoomGameObject(Data, 0, objMods);
 
-objMods.EventHandlerFor(EventType.Create, Data).AppendGML(@"
+var importGroup = new UndertaleModLib.Compiler.CodeImportGroup(Data);
+
+importGroup.QueueAppend(objMods.EventHandlerFor(EventType.Create, Data), @"
     global.gm_mods_id = id;
     if(!variable_instance_exists(id, ""patches""))
         patches = ds_map_create();
@@ -83,17 +85,17 @@ objMods.EventHandlerFor(EventType.Create, Data).AppendGML(@"
     if(!variable_instance_exists(id, ""updateWindowTitle""))
         updateWindowTitle = true;
     timesPatched++;
-", Data);
+");
 
-objMods.EventHandlerFor(EventType.CleanUp, Data).AppendGML(@"
+importGroup.QueueAppend(objMods.EventHandlerFor(EventType.CleanUp, Data), @"
     if(variable_instance_exists(id, ""patches"") && patches != -1) {
         ds_map_destroy(patches);
         patches = -1;
     }
     updateWindowTitle = false;
-", Data);
+");
 
-objMods.EventHandlerFor(EventType.Draw, EventSubtypeDraw.DrawGUI, Data).ReplaceGML(@"
+importGroup.QueueAppend(objMods.EventHandlerFor(EventType.Draw, EventSubtypeDraw.DrawGUI, Data), @"
     if(updateWindowTitle) {
         updateWindowTitle = false;
         var newWindowTitle = ""%game% v%betaVersion% | %modlist%"";
@@ -112,7 +114,7 @@ objMods.EventHandlerFor(EventType.Draw, EventSubtypeDraw.DrawGUI, Data).ReplaceG
         newWindowTitle = string_replace(newWindowTitle, ""%modlist%"", modlist);
         window_set_caption(newWindowTitle);
     }
-", Data);
+");
 
 int i = 0;
 foreach(var patchName in patchNames) {
@@ -124,14 +126,18 @@ foreach(var patchName in patchNames) {
         break;
     }
 
-    objMods.EventHandlerFor(EventType.Create, Data).AppendGML(@$"
+    importGroup.QueueAppend(objMods.EventHandlerFor(EventType.Create, Data), @$"
         ds_map_set(patches, {JsonSerializer.Serialize(patchName)}, {gamePatch.Public.ToString().ToLower()})
-    ", Data);
+    ");
 }
+
+SetProgressBar($"Applying global patch", "Executing script", 0, 1);
+importGroup.Import();
 
 if (envPatchStr == null && ScriptExecutionSuccess) {
     ScriptMessage("Applied patches: "+String.Join(", ", patchNames.ToArray()));
 }
+
 
 await StopProgressBarUpdater();
 HideProgressBar();
